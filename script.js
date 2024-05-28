@@ -205,9 +205,9 @@ const animate = (timestamp) => {
 	ravens = ravens.filter((raven) => !raven.markedForDeletion)
 	explosions = explosions.filter((explosion) => !explosion.markedForDeletion)
 
-	if (!gameOver) {
+	if (!gameOver && window.innerWidth >= 790) {
 		requestAnimationFrame(animate)
-		if (window.innerWidth >= 790) bgMusic.play()
+		bgMusic.play()
 	} else {
 		drawGameOver()
 		bgMusic.pause()
