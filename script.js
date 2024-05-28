@@ -207,7 +207,7 @@ const animate = (timestamp) => {
 
 	if (!gameOver) {
 		requestAnimationFrame(animate)
-		bgMusic.play()
+		if (window.innerWidth >= 790) bgMusic.play()
 	} else {
 		drawGameOver()
 		bgMusic.pause()
