@@ -51,6 +51,7 @@ class Raven {
 			Math.floor(Math.random() * 255),
 		] // [red, green, blue] values range from 0 to 255
 		this.color = `rgb(${this.randomColors[0]}, ${this.randomColors[1]}, ${this.randomColors[2]})`
+		this.hasTrail = Math.random() > 0.5
 	}
 	update(deltatime) {
 		if (this.y < 0 || this.y > canvas.height - this.height)
@@ -65,6 +66,11 @@ class Raven {
 		if (this.timeSinceFlap > this.flapInterval) {
 			this.frame < this.maxFrame ? this.frame++ : (this.frame = 0)
 			this.timeSinceFlap = 0
+			if (this.hasTrail) {
+				for (let i = 0; i < 5; i++) {
+					particles.push(new Particle(this.x, this.y, this.width, this.color))
+				}
+			}
 		}
 
 		if (this.x + this.width < 0) gameOver = true
@@ -129,6 +135,35 @@ class Explosion {
 	}
 }
 
+//Creating Particles
+let particles = []
+class Particle {
+	constructor(x, y, size, color) {
+		this.size = size
+		this.x = x + this.size / 2
+		this.y = y + this.size / 3
+		this.radius = (Math.random() * this.size) / 10
+		this.maxRadius = Math.random() * 20 + 35
+		this.markedForDeletion = false
+		this.speedX = Math.random() * 1 + 0.5
+		this.color = color
+	}
+	update() {
+		this.x += this.speedX
+		this.radius += 0.3
+		if (this.radius > this.maxRadius - 5) this.markedForDeletion = true
+	}
+	draw() {
+		ctx.save()
+		ctx.globalAlpha = 1 - this.radius / this.maxRadius
+		ctx.beginPath()
+		ctx.fillStyle = this.color
+		ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
+		ctx.fill()
+		ctx.restore()
+	}
+}
+
 //Displaying the Score
 const drawScore = () => {
 	ctx.fillStyle = '#222'
@@ -168,7 +203,10 @@ window.addEventListener('click', (e) => {
 			raven.markedForDeletion = true
 			score++
 			explosions.push(new Explosion(raven.x, raven.y, raven.width))
-			console.log(explosions)
+
+			if (raven.hasTrail) {
+				score++
+			}
 		}
 	})
 })
@@ -196,7 +234,7 @@ const animate = (timestamp) => {
 	drawScore()
 
 	//update and draw ravens
-	;[...ravens, ...explosions].forEach((object) => {
+	;[...particles, ...ravens, ...explosions].forEach((object) => {
 		object.update(deltatime)
 		object.draw()
 	})
@@ -204,6 +242,7 @@ const animate = (timestamp) => {
 	//delete the ravens and explosion sprites
 	ravens = ravens.filter((raven) => !raven.markedForDeletion)
 	explosions = explosions.filter((explosion) => !explosion.markedForDeletion)
+	particles = particles.filter((particle) => !particle.markedForDeletion)
 
 	if (!gameOver && window.innerWidth >= 790) {
 		requestAnimationFrame(animate)
